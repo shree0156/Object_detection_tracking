@@ -139,11 +139,6 @@ A live video window will open showing the annotated output with bounding boxes a
 ## Author
 
 **Shreeja Maiya**
-MCA in Artificial Intelligence | Aspiring Data Scientist & ML Engineer
-
-[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/shreeja-maiya-574537200)
-[![GitHub](https://img.shields.io/badge/GitHub-shree0156-black?style=flat-square&logo=github)](https://github.com/shree0156)
-[![Email](https://img.shields.io/badge/Email-shreejamaiya0156%40gmail.com-red?style=flat-square&logo=gmail)](mailto:shreejamaiya0156@gmail.com)
 
 ---
 
