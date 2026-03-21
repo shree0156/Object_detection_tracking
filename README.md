@@ -1,146 +1,153 @@
-# Real-Time Object Detection & Tracking System
-## Overview
-This project implements a real-time object detection and multi-object tracking pipeline using YOLOv8 for detection and SORT for tracking. The system detects and tracks players, referees, and the ball in a football match video.
+# Object Detection & Player Tracking — Football Match Analysis
 
-## Problem Statement
+![Python](https://img.shields.io/badge/Python-3.8+-blue?style=flat-square&logo=python)
+![YOLOv8](https://img.shields.io/badge/YOLOv8-Ultralytics-purple?style=flat-square)
+![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-green?style=flat-square)
+![SORT](https://img.shields.io/badge/SORT-Multi--Object%20Tracking-orange?style=flat-square)
 
-In sports analytics and computer vision applications, tracking multiple moving objects consistently across video frames is crucial. This project demonstrates how detection and tracking can be combined to maintain object identity over time.
+> A real-time computer vision pipeline that detects and tracks players, referees, and the ball across football match video frames — assigning persistent IDs that survive occlusion and re-entry.
+
+---
+
+## The Problem
+
+Manual player tracking in sports video analysis is slow, expensive, and error-prone at real-time frame rates. Coaches and analysts need an automated way to identify *who* is where on the pitch at every moment — consistently, even when players overlap or leave the frame.
+
+---
+
+## How It Works
+
+```
+Input Video (football match footage)
+         │
+         ▼
+┌─────────────────────┐
+│  YOLOv8 Detection   │  ← detects players, referee, ball
+│  (frame-by-frame)   │    outputs bounding boxes + class labels
+└────────┬────────────┘
+         │  bounding boxes per frame
+         ▼
+┌─────────────────────┐
+│  SORT Tracker       │  ← assigns persistent unique IDs
+│  (Kalman Filter +   │    tracks identity across frames
+│   Hungarian Match)  │    handles occlusion & re-entry
+└────────┬────────────┘
+         │  tracked objects with IDs
+         ▼
+┌─────────────────────┐
+│  OpenCV Visualiser  │  ← draws bounding boxes + ID labels
+│                     │    overlaid on original video frames
+└─────────────────────┘
+         │
+         ▼
+  Output: annotated video with tracked players
+```
+
+### Why SORT over basic detection?
+
+YOLOv8 alone detects objects *per frame* — it has no memory. If a player leaves the frame and comes back, they get a new random ID each time. SORT (Simple Online and Realtime Tracking) uses a **Kalman Filter** to predict where each object will be next frame, and the **Hungarian Algorithm** to match predictions to detections — giving each player a consistent ID for the entire video.
+
+---
+
+## Results
+
+| Metric | Result |
+|--------|--------|
+| Detection classes | Player, Referee, Ball |
+| Tracking method | SORT (Kalman Filter + Hungarian Algorithm) |
+| ID consistency | Persistent across frames including re-entries |
+| Input format | MP4 video (720p tested) |
+| Output | Annotated video with bounding boxes and IDs |
+
+- Successfully tracked multiple players simultaneously with consistent IDs
+- Ball tracking adapted to suppress duplicate detections (only one ball maintained)
+- Demonstrated on a 15-second 720p football match clip
+
+---
+
+## Project Structure
+
+```
+Object_detection_tracking/
+│
+├── detect_from_video.py          # Main pipeline: detection + tracking + visualisation
+├── sort.py                       # SORT multi-object tracking algorithm
+├── yolov8n.pt                    # YOLOv8 nano model weights
+├── 15sec_input_720p.mp4          # Sample input video
+├── Object_Detection_Tracking_Report.pdf   # Full project report
+└── README.md
+```
+
+---
+
+## Run Locally
+
+**1. Clone the repository**
+```bash
+git clone https://github.com/shree0156/Object_detection_tracking.git
+cd Object_detection_tracking
+```
+
+**2. Install dependencies**
+```bash
+pip install ultralytics opencv-python numpy
+```
+
+**3. Run detection + tracking**
+```bash
+python detect_from_video.py
+```
+
+A live video window will open showing the annotated output with bounding boxes and player IDs. To process a different video, update the input path in `detect_from_video.py`.
+
+> **Optional:** To save the output video instead of displaying it live, add a `cv2.VideoWriter` block to `detect_from_video.py`.
+
+---
 
 ## Tech Stack
 
-Python
+| Component | Technology |
+|-----------|-----------|
+| Object detection | YOLOv8 (Ultralytics) — nano model |
+| Multi-object tracking | SORT (Kalman Filter + Hungarian Algorithm) |
+| Video processing | OpenCV |
+| Language | Python 3.8+ |
+| Data handling | NumPy |
 
-YOLOv8 (Ultralytics)
+---
 
-OpenCV
+## Key Design Decisions
 
-SORT (Simple Online Realtime Tracking)
+**Why YOLOv8 nano?** Speed matters for real-time tracking. The nano model processes frames fast enough for live video while still achieving reliable detection on standard match footage.
 
-## Approach
-### 1. Object Detection
+**Why SORT over DeepSORT?** SORT is lightweight and has no deep learning dependency for the tracking component — making it easier to run without a GPU. For this use case (single camera, controlled environment), SORT performs reliably without the overhead of DeepSORT's appearance embeddings.
 
-Used YOLOv8 pre-trained model
+**Ball deduplication:** The default YOLO model sometimes detects multiple overlapping bounding boxes for the ball. A custom suppression step in the pipeline keeps only the highest-confidence detection per frame.
 
-Detected players and ball in each video frame
+---
 
-Generated bounding boxes with confidence scores
+## Future Improvements
 
-### 2. Object Tracking
+- [ ] Train a custom YOLOv8 model on a larger football dataset to improve ball detection accuracy
+- [ ] Switch to DeepSORT or ByteTrack for better re-identification after long occlusions
+- [ ] Add player jersey number recognition using OCR
+- [ ] Generate heatmaps of player positions over the full match
+- [ ] Build a Streamlit dashboard for uploading and analysing match videos
 
-Integrated SORT algorithm
+---
 
-Assigned unique IDs to detected objects
+## Author
 
-Maintained identity consistency across frames
+**Shreeja Maiya**
+MCA in Artificial Intelligence | Aspiring Data Scientist & ML Engineer
 
-### 3. Visualization
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-blue?style=flat-square&logo=linkedin)](https://linkedin.com/in/shreeja-maiya-574537200)
+[![GitHub](https://img.shields.io/badge/GitHub-shree0156-black?style=flat-square&logo=github)](https://github.com/shree0156)
+[![Email](https://img.shields.io/badge/Email-shreejamaiya0156%40gmail.com-red?style=flat-square&logo=gmail)](mailto:shreejamaiya0156@gmail.com)
 
-Drew bounding boxes and object IDs
+---
 
-Processed football match video for demonstration
-
-### 4. Results
-
-Successfully detected and tracked multiple objects
-
-Maintained consistent object IDs across frames
-
-Demonstrated real-time detection capability
-
-## How to Run
-
-Install required libraries
-
-Download YOLO model weights
-
-Run the detection script
-
-Provide input video file
-
-## Project Structure
-bash
-Copy
-Edit
-.
-├── detect_from_video.py          # Main script for running detection + tracking
-
-├── sort.py                       # SORT tracking logic
-
-├── best.pt                       # Trained YOLOv8 model
-
-├── sample_video.mp4              # Example input video
-
-├── README.md                     # Project documentation
-
-└── Object_Detection_Tracking_Report.pdf  # Final report
-
-## Requirements & Setup
-All required packages are listed below. You don't need a separate requirements.txt.
-
-## Dependencies:
-Python 3.8+
-
-Ultralytics (pip install ultralytics)
-
-OpenCV (pip install opencv-python)
-
-NumPy (pip install numpy)
-
-## Installation Steps:
-Clone the repository
-
-bash
-Copy
-Edit
-git clone https://github.com/shree0156/object-detection-tracking.git
-cd object-detection-tracking
-
-## Install dependencies
-(Use a virtual environment if you prefer)
-
-nginx
-Copy
-Edit
-pip install ultralytics opencv-python numpy
-Place your input video
-Replace sample_video.mp4 with your own football match video if needed.
-
-Run the detection & tracking script
-
-nginx
-Copy
-Edit
-python detect_from_video.py
-
-This will:
-
-Detect players, referees, and the ball.
-
-Assign unique and consistent IDs.
-
-Show a live video window with bounding boxes and IDs.
-
-## Notes
-The model used is a fine-tuned YOLOv8 trained to detect 3 classes: player, referee, and ball.
-
-SORT has been adapted to keep only one ball in detection even if multiple are found.
-
-Player tracking is consistent across frames using unique IDs.
-
-## Output
-Live video preview with tracked objects.
-
-Optionally, you can modify the code to save output video (using cv2.VideoWriter).
-
-## Report
-The project report explaining the approach, experiments, challenges, and future improvements is available as Object_Detection_Tracking_Report.pdf in this repository.
-
-## Credits
-Ultralytics YOLOv8
-
-SORT Tracker
-
-numpy
+*If you found this useful, consider giving it a ⭐*
 
 Install all using the command
 
